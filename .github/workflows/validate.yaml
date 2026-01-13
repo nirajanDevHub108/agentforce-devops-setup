@@ -25,4 +25,4 @@ jobs:
 
       - name: 'Validate'
         run: |
-          sf project deploy validate -d force-app/ -l RunRelevantTests test -w 30
+          sf project deploy validate -d force-app/ -l RunLocalTests -w 30
