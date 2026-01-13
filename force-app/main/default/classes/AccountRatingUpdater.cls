@@ -1,4 +1,4 @@
-/**
+ /**
  * @description Provides a method to update Account.Rating for a set of Accounts.
  * Follows bulkified patterns and avoids DML in loops.
  * Note: Plain Apex method per requirement (not invocable). Uses Database methods with error capture.
