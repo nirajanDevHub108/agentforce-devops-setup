@@ -9,15 +9,29 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: salesforce/cli:latest-slim
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
     steps:
       - name: 'Checkout source code'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-            
-      - name: 'Authenticate using SFDX_AUTH_URL'
+
+      - name: 'Verify repo root contains force-app'
         run: |
-          echo ${{ secrets.SFDX_AUTH_URL }} | sf org login sfdx-url -s -u
+          pwd
+          ls -la
+          test -d force-app || (echo "force-app not found in $(pwd)" && exit 1)
+
+      - name: 'Authenticate using SFDX_AUTH_URL'
+        env:
+          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL }}
+        run: |
+          if [ -z "$SFDX_AUTH_URL" ]; then
+            echo "SFDX_AUTH_URL secret is missing"; exit 1;
+          fi
+          echo "$SFDX_AUTH_URL" | sf org login sfdx-url -s -u
 
       - name: 'Deploy'
         run: |
