@@ -1,0 +1,229 @@
+1️⃣ Scratch Org Lifecycle
+
+Scratch orgs are temporary, source-driven orgs used for development and testing.
+
+🔹 Create a Scratch Org
+sf org create scratch \
+  -f config/project-scratch-def.json \
+  -a myScratch \
+  -d \
+  -y 7
+
+
+Explanation
+
+-f → scratch org definition file
+
+-a → alias for easy reference
+
+-d → set as default org
+
+-y → lifespan in days
+
+🔹 List All Orgs
+sf org list
+
+
+Shows all authenticated orgs (scratch, sandbox, prod).
+
+🔹 Open Scratch Org in Browser
+sf org open -o myScratch
+
+🔹 Delete Scratch Org
+sf org delete scratch -o myScratch
+
+
+Deletes the org when work is done.
+
+2️⃣ Source Tracking & Syncing (Scratch Orgs)
+
+Used to keep local source and org metadata in sync.
+
+🔹 Push Local Source → Scratch Org
+sf project deploy start -o myScratch
+
+
+Deploys local code to the org.
+
+🔹 Pull Org Changes → Local
+sf project retrieve start -o myScratch
+
+
+Retrieves changes made directly in the org.
+
+🔹 Preview Changes (No Action)
+sf project deploy preview -o myScratch
+sf project retrieve preview -o myScratch
+
+
+Shows what will change before deploy/retrieve.
+
+🔹 Reset Source Tracking (Last Resort)
+sf project reset tracking -o myScratch
+
+
+⚠️ Clears tracking history only (does NOT delete code).
+
+3️⃣ Apex: Create, Run, Test
+🔹 Create Apex Class
+sf apex generate class \
+  -n MyClass \
+  -d force-app/main/default/classes
+
+🔹 Create Apex Trigger
+sf apex generate trigger \
+  -n MyTrigger \
+  -s Account \
+  -e "before insert,before update" \
+  -d force-app/main/default/triggers
+
+🔹 Run Anonymous Apex
+
+From file:
+
+sf apex run -f scripts/apex/hello.apex -o myScratch
+
+
+Inline:
+
+echo "System.debug('Hello');" | sf apex run -o myScratch
+
+4️⃣ Apex Tests & Code Coverage
+🔹 Run All Local Tests
+sf apex test run \
+  -l RunLocalTests \
+  -o myScratch \
+  --wait 20 \
+  --result-format human \
+  --code-coverage
+
+🔹 Run Specific Test Classes
+sf apex test run \
+  -n AccountRatingUpdaterTest,TestApexClassTest \
+  -o myScratch \
+  --wait 20 \
+  --code-coverage
+
+🔹 Get Test Results by Run ID
+sf apex test report \
+  -i 707XXXXXXXXXXXX \
+  -o myScratch \
+  --result-format human
+
+🔹 Retrieve Code Coverage (JSON)
+sf apex test report \
+  -i 707XXXXXXXXXXXX \
+  -o myScratch \
+  --code-coverage \
+  --result-format json | jq '.result.coverage'
+
+5️⃣ Metadata Deploy & Retrieve (Non-Tracked Orgs)
+
+Used mainly for sandboxes & production.
+
+🔹 Deploy Entire Source Folder
+sf project deploy start -o myScratch -d force-app
+
+🔹 Deploy Using Manifest
+sf project deploy start -o myScratch -x manifest/package.xml
+
+🔹 Preview Deploy
+sf project deploy preview -o myScratch -x manifest/package.xml
+
+🔹 Retrieve Using Manifest
+sf project retrieve start -o myScratch -x manifest/package.xml
+
+🔹 Deploy with Test Level
+sf project deploy start \
+  -o myScratch \
+  -d force-app \
+  --test-level RunLocalTests
+
+6️⃣ Keeping Scratch Org and Source Equal
+🔹 Make Local = Org
+sf project retrieve start -o myScratch
+
+🔹 Make Org = Local
+sf project deploy start -o myScratch
+
+🔹 Best Practice Loop
+
+Pull before coding
+
+Deploy after coding
+
+Preview if diverged
+
+Reset tracking only if stuck
+
+7️⃣ Org Login & Authentication
+🔹 Login via Browser
+sf org login web -a myAlias
+
+🔹 Login via JWT (CI/CD)
+sf org login jwt \
+  -u user@example.com \
+  -i clientId \
+  -f server.key \
+  -r https://login.salesforce.com \
+  -a myAlias
+
+🔹 Get SFDX Auth URL
+sf org display --verbose -o myAlias --json | jq -r '.result.sfdxAuthUrl'
+
+
+⚠️ Treat as a secret.
+
+🔹 Login Using Auth URL
+sf org login sfdx-url -a myAlias -f authurl.txt
+
+8️⃣ Data Operations
+🔹 Run SOQL Query
+sf data query \
+  -q "SELECT Id, Name, Rating FROM Account LIMIT 10" \
+  -o myScratch
+
+🔹 Import Data
+sf data import tree -o myScratch -p data/plan.json
+
+🔹 Export Data
+sf data export tree \
+  -o myScratch \
+  -q "SELECT Id, Name FROM Account LIMIT 5" \
+  -d data -p
+
+9️⃣ LWC, PermSets, UI
+🔹 Create Lightning Web Component
+sf lightning generate component \
+  -n myLwc \
+  -d force-app/main/default/lwc
+
+🔹 Assign Permission Set
+sf org assign permset -n CustomerTierAccess -o myScratch
+
+🔹 Open App or Page
+sf org open -o myScratch -p /lightning/n/My_App
+
+🔟 Packaging (Unlocked Packages)
+🔹 Create Package
+sf package create -n MyPkg -t Unlocked -r force-app
+
+🔹 Create Package Version
+sf package version create -p MyPkg -x -w 30 -c
+
+🔹 Install Package
+sf package install -p 04tXXXXXXXXXXXX -o myScratch -w 30
+
+🔐 Security & Best Practices (VERY IMPORTANT)
+
+❌ Never commit auth URLs or keys
+
+✅ Use Dev Hub for scratch orgs
+
+✅ Use aliases consistently
+
+✅ Run RunLocalTests before merge
+
+✅ Prefer source tracking for scratch orgs
+
+✅ Manifest-based deploys for prod
