@@ -54,6 +54,8 @@ Retrieves changes made directly in the org.
 🔹 Preview Changes (No Action)
 sf project deploy preview -o myScratch
 sf project retrieve preview -o myScratch
+to show in git
+sf project retrieve start -o developer1-scratch
 
 
 Shows what will change before deploy/retrieve.
